@@ -223,7 +223,7 @@ TEST(traverse_in_pre_order_impl){
     ostringstream oss_preorder;
     tree.traverse_preorder(oss_preorder);
     cout << oss_preorder.str() << endl << endl;
-    ASSERT_TRUE(oss_preorder.str() == "3 1 4 6 7 8 10 ");
+    ASSERT_TRUE(oss_preorder.str() == "3 1 4 8 7 6 10 ");
 }
 
 TEST(min_greater_than_impl){
@@ -255,4 +255,33 @@ TEST(min_greater_than_impl){
     ASSERT_TRUE(*tree.min_greater_than(8) == 10);
     ASSERT_TRUE(tree.min_greater_than(10) == tree.end());
 }
+
+TEST(operator_arror){
+    BinarySearchTree<std::pair<int, double>> tree;
+    auto it = tree.insert({3, 4.1});
+    tree.insert({1, 5.7});
+    tree.insert({4, 5.3});
+    tree.insert({2, 2.9});
+    tree.insert({8, 0.1});
+    tree.insert({7, 9.3});
+    tree.insert({6, 2.3});
+    tree.insert({10,0.9});
+    /*      /3\ 
+           1\  4\
+             2  /8\ 
+              /7   10
+             6
+    */
+   ASSERT_EQUAL(it->first, 3);
+   ASSERT_EQUAL(it->second, 4.1);
+   ++(++it); // 6;
+   ASSERT_EQUAL(it->first, 6);
+   ASSERT_EQUAL(it->second, 2.3);
+   auto it_copy = it++;
+   ASSERT_EQUAL(it_copy->first, 6);
+   ASSERT_EQUAL(it_copy->second, 2.3);
+   ++it; // 8;
+   ASSERT_EQUAL(it->first, 8);
+   ASSERT_EQUAL(it->second, 0.1);
+}              
 TEST_MAIN()

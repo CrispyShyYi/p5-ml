@@ -184,7 +184,7 @@ public:
     //             cout << it->second << endl; // prints 4.1
     T *operator->() const {
       return &current_node->datum;
-    }
+    } /**/
 
     // Prefix ++
     Iterator &operator++() {
@@ -513,8 +513,8 @@ private:
 
     else{
       os << node->datum << " ";
-      traverse_inorder_impl(node->left, os);
-      traverse_inorder_impl(node->right, os);
+      traverse_preorder_impl(node->left, os);
+      traverse_preorder_impl(node->right, os);
     }
   } /**/
 
