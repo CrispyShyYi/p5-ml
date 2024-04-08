@@ -468,14 +468,14 @@ private:
     // check the left subtree are all less than the current node;
     if (node->left != nullptr){
       if (!less(node->left->datum, node->datum) || 
-          !check_sorting_invariant_impl(node->left, less)){
+          !less(max_element_impl(node->left)->datum, node->datum)){
             return false;
       }
     }
     // check the right subtree is all less than the current node;
     if (node->right != nullptr){
       if (!less(node->datum, node->right->datum) ||
-          !check_sorting_invariant_impl(node->right, less)){
+          !less(node->datum, min_element_impl(node->right)->datum)){
             return false;
       }
     }

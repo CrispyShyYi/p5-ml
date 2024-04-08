@@ -198,6 +198,24 @@ TEST(check_sorting_invariant_impl){
     //     /2   10
     //    6
     ASSERT_FALSE(tree.check_sorting_invariant());
+
+    BinarySearchTree<int> tree_alt;
+    tree_alt.insert(4);
+    tree_alt.insert(2);
+    tree_alt.insert(7);
+    tree_alt.insert(1);
+    tree_alt.insert(3);
+    /*        /4\
+            /2\   7
+           1   3
+    */
+   it = tree_alt.find(3);
+   *it = 5;
+   /*        /4\
+            /2\   7
+           1   5
+    */
+   ASSERT_FALSE(tree_alt.check_sorting_invariant());
 }
 
 TEST(traverse_in_pre_order_impl){
