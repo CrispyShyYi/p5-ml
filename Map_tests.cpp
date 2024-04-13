@@ -13,6 +13,9 @@ TEST(test_empty) {
     ASSERT_TRUE(words.empty());
     ASSERT_TRUE(words.size() == 0);
     ASSERT_TRUE(words.find("pi") == words.end());
+
+    words["three"] = 3;
+    
 }
 
 
