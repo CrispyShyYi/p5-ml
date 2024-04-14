@@ -35,7 +35,7 @@ class Classifier{
             while (in_csv >> row){
                 // show every post;
                 if (is_debug){
-                    cout << "label = " << row["tag"] <<
+                    cout << "  label = " << row["tag"] <<
                 ", content = " << row["content"] << endl;
                 }
                 // calculate how many post;
@@ -50,7 +50,7 @@ class Classifier{
                     ++label_contain_word[{row["tag"], word}];
                 }
             }
-            cout << "trained on " << num_post << " examples";
+            cout << "trained on " << num_post << " examples" << endl;
             // in is de_bug;
             if (is_debug){
                 cout << "vocabulary size = " << word_in_post.size() << endl << endl;
@@ -60,59 +60,62 @@ class Classifier{
                 // cout classes section;
                 cout << "classes:" << endl;
                 for (auto it : label_in_post){
-                    cout << " " << it.first << ", " << 
+                    cout << "  " << it.first << ", " << 
                             it.second << " examples, " <<
                             "log-prior = " << log_prior(it.first) <<
                             endl;
                 }
                 // cout classifier parameters section;
                 cout << "classifier parameters:" << endl;
-                for (auto it_tag : label_in_post){
-                    for (auto it_word : word_in_post){
-                        cout << it_tag.first << ":" << it_word.first << 
-                        ", count = " << it_word.second << 
-                        ", log-likelihood = " << 
-                        log_likelihood(it_tag.first, it_word.first) << endl;
-                    }
-                    
+                for (auto it_tag : label_contain_word){
+                    cout << "  " << it_tag.first.first << ":" << 
+                    it_tag.first.second << 
+                    ", count = " << it_tag.second << 
+                    ", log-likelihood = " << 
+                    log_likelihood(it_tag.first.first, it_tag.first.second) << endl;
                 }
                 cout << endl;
             }
         }
 
         // prediction classifier;
-        Classifier(string in_file){
+        void test_part(string in_file){
             // cout the test data section;
             cout << "test data:" << endl;
+
             int num_test = 0;
+            int match_row_test = 0;
             csvstream in_csv(in_file);
             std::map<string, string> row_test;
             // contain the log-probability of each tag;
             std::map<string, double> tag_prob;
-            // log-probability of each label;
-            double temp_prob;
-
+            
             while (in_csv >> row_test){
-                // calculate how many tests are inserted;
+                // calculate the number of test case;
                 num_test++;
+                // in each content, the unique name;
                 std::set<string> words = unique_words(row_test["content"]);
-                // calculate how many post have the tag name;
-                ++label_in_post_test[row_test["tag"]];
-                for (auto word : words){
-                    // calculate the number of how many post have the word;
-                    ++word_in_post_test[word];
-                    // calculate the number of posts contain the tag and the word;
-                    ++label_contain_word_test[{row_test["tag"], word}];
+                // every test case;
+                for (auto it_tag : label_in_post){
+                    // calculate each tag's probability;
+                    tag_prob[it_tag.first] = log_probability(it_tag.first, words);
                 }
-                // contain unique words in each content;
-                std::set<string> words = unique_words(row_test["content"]);
-                tag_prob[row_test["tag"]] = log_probability(row_test["tag"]);
-                // to be continue;
+                // cout the most likely;
+                std::pair<string, double> output = max_tag_prob(tag_prob);
+                cout << "  correct = " << row_test["tag"] << ", predicted = " <<
+                    output.first << ", log-probability score = " <<
+                    output.second << endl;
+                cout << "  content = " << row_test["content"] << endl << endl;
+                // chech if the output match the expected;
+                if (row_test["tag"] == output.first) match_row_test++;
             }
+            // check effiency;
+            cout << "performance: " << match_row_test << " / " << num_test <<
+            " posts predicted correctly" << endl;
         }
 
         // find the tag with maximum log-probability;
-        std::pair<string, double> max_log_prob (std::map<string, double> tag_prob_in){
+        std::pair<string, double> max_tag_prob (std::map<string, double> tag_prob_in){
             std::string max_tag = (*tag_prob_in.begin()).first;
             double max_prob = (*tag_prob_in.begin()).second;
             for (auto it : tag_prob_in){
@@ -125,27 +128,27 @@ class Classifier{
         }
 
         double log_prior(string tag_in){
-            return log(label_in_post[tag_in]/static_cast<double>(num_post));
+            return log(label_in_post[tag_in] / (double)(num_post));
         }
 
         double log_likelihood(string tag_in, string word_in){
             // if word_in does not exist in anywhere;
             if (word_in_post.find(word_in) == word_in_post.end()){
-                return log(1/static_cast<double>(num_post));
+                return log(1.0 / (double)(num_post));
             }
             // if word_in does not exist in with label_in, but somewhere else;
             if (label_contain_word.find({tag_in, word_in}) == label_contain_word.end()){
-                return log(word_in_post[word_in]/static_cast<double>(num_post));
+                return log(word_in_post[word_in] / (double)(num_post));
             }
-            return log(label_contain_word[{tag_in, word_in}]/label_in_post[tag_in]);
+            return log(label_contain_word[{tag_in, word_in}] / (double)label_in_post[tag_in]);
         }
         
         // calculate the log probability score of give post;
-        double log_probability(string tag_in){
+        double log_probability(string tag_in, std::set<string> words_in){
             // log(C) + log(wi|C);
             double log_prob_tag = log_prior(tag_in);
-            for (auto it_word : word_in_post){
-                log_prob_tag += log_likelihood(tag_in, it_word.first);
+            for (auto it_word : words_in){
+                log_prob_tag += log_likelihood(tag_in, it_word);
             }
             return log_prob_tag;
         }
@@ -157,11 +160,6 @@ class Classifier{
         std::map<string, int> word_in_post;
         std::map<string, int> label_in_post;
         std::map<std::pair<string, string>, int> label_contain_word;
-
-        // testing data;
-        std::map<string, int> word_in_post_test;
-        std::map<string, int> label_in_post_test;
-        std::map<std::pair<string, string>, int> label_contain_word_test;
 };
 
 void warning(){
@@ -169,20 +167,25 @@ void warning(){
 };
 
 
-int main(int argc, char **argv) {
+int main(int argc, const char *argv[]) {
     
     // set precision;
     cout.precision(3);
 
     // check the input variables;
-    if (argc != 3 || argc !=4) {
+    if (argc < 3 || argc > 4) {
         warning();
-        return -1;
+        //return -1;
     }
     if (argc == 4 && !strcmp(argv[3], "--debug")) {
         warning();
-        return -1;
+        //return -1;
     }
+
+    // check if "--debug" is required;
+    bool is_debug = false;
+    if (argc == 4) is_debug = true;
+
     // check the file could be open or not;
     string filename = argv[1];
     ifstream inf(argv[1]);
@@ -190,4 +193,14 @@ int main(int argc, char **argv) {
         cout << "Error opening file: " << filename << endl;
         return -1;
     }
+
+    // read train and test files;
+    string train_data = argv[1];
+    string test_data = argv[2];
+    
+    // run the train data;
+    Classifier train_section(train_data, is_debug);
+    train_section.test_part(test_data);
+    
+    return 1;
 };
