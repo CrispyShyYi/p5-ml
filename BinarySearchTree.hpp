@@ -533,17 +533,20 @@ private:
     if (empty_impl(node)) return nullptr;
  
     if (less(val, node->datum)) {
-        // The current node is a candidate, but we must check the left subtree for a smaller candidate.
+        // The current node is a candidate, 
+        // but we must check the left subtree for a smaller candidate.
         Node* candidate = min_greater_than_impl(node->left, val, less);
         // If a suitable candidate is found in the left subtree, return it.
-        // Otherwise, return the current node as it is the smallest element greater than val.
+        // Otherwise, return the current node 
+        // as it is the smallest element greater than val.
         if (candidate == nullptr) {
             return node;
         } else {
             return candidate;
         }
     } else {
-        // The current node is not greater than val, so any valid candidate must be in the right subtree.
+        // The current node is not greater than val, 
+        // so any valid candidate must be in the right subtree.
         return min_greater_than_impl(node->right, val, less);
     }
   } /**/

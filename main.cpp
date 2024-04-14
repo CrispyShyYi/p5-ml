@@ -1,6 +1,6 @@
 #include <iostream>
 #include <stdio.h>
-#include <string.h>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <set>
@@ -140,7 +140,8 @@ class Classifier{
             if (label_contain_word.find({tag_in, word_in}) == label_contain_word.end()){
                 return log(word_in_post[word_in] / (double)(num_post));
             }
-            return log(label_contain_word[{tag_in, word_in}] / (double)label_in_post[tag_in]);
+            return log(label_contain_word[{tag_in, word_in}] 
+                        / (double)label_in_post[tag_in]);
         }
         
         // calculate the log probability score of give post;
@@ -175,11 +176,11 @@ int main(int argc, const char *argv[]) {
     // check the input variables;
     if (argc < 3 || argc > 4) {
         warning();
-        //return -1;
+        return -1;
     }
-    if (argc == 4 && !strcmp(argv[3], "--debug")) {
+    if (argc == 4 && strcmp(argv[3], "--debug") != 0) {
         warning();
-        //return -1;
+        return -1;
     }
 
     // check if "--debug" is required;
